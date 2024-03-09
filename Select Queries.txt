@@ -1,0 +1,46 @@
+			I.	SELECT Queries
+
+	1.List of employees in whose name "Ni"/"ni" is mentioned, with a list of detected crimes for each.
+
+SELECT E.f_name, E.t_name, C.crime_id
+FROM Employee E, Is_investigating I, CRIME C
+WHERE (E.ID_EMPLOYEE = I.Chief_id or E.ID_EMPLOYEE = I.Partner_id) AND I.Cr_id = C.crime_id
+AND C.is_solved = 'Y' 
+AND (E.f_name like '%Ni%' OR E.f_name like '%ni%');
+
+
+	2.For a perpetrator named “Geno”, a list of all other criminals with whom he was involved in the commission of 2 or more crimes.
+
+SELECT C.f_name,C.t_name,C2.f_name,C2.t_name
+FROM CRIMINAL C, Is_commited I,CRIMINAL C2, Is_commited I2
+WHERE (I.Main_perpetrator_id=C.Criminal_id or I.Crime_partner_id=C.Criminal_id) 
+and (I2.Main_perpetrator_id=C2.Criminal_id 
+or I2.Crime_partner_id=C2.Criminal_id) 
+and I2.Crime_id=I.Crime_id 
+and C.f_name not like C2.f_name 
+and C.t_name not like C2.t_name
+ 	and C.f_name like "Geno"
+GROUP BY C.f_name,C.t_name, C2.f_name,C2.t_name
+HAVING count(distinct I.crime_id)>=2
+
+ 
+
+
+	3.Recapitulation for the whole of 2015. : 
+	-total number of committed crimes;
+	- total number of detected crimes;
+	- ratio of crimes with disclosure to those without subsequent disclosure.
+
+SELECT  TotalCrimes , SolvedCrimes, (TotalCrimes-SolvedCrimes)AS UnsolvedCrimes ,
+ SolvedCrimes/(TotalCrimes-SolvedCrimes) AS Ratio
+from (SELECT COUNT(crime_id) as TotalCrimes 
+		FROM crime 
+           ) all_crimes ,
+	( SELECT COUNT(*) as SolvedCrimes 
+		FROM crime 
+        	WHERE is_solved like 'Y' 
+) resolved  ,
+	crime C
+WHERE C.dateOpened >= '2015-01-01' AND C.dateOpened <= '2015-12-31'
+
+ 
