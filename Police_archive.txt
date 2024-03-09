@@ -1,0 +1,152 @@
+//	I.	DDL SQL script: 
+
+create database policeArchive;
+show databases;
+use policearchive;
+show tables;
+
+CREATE TABLE DEPARTMENT (
+    Dep_id int AUTO_INCREMENT,
+    Dep_name varchar(40) NOT NULL,
+    Dep_adress varchar(50) NOT NULL,
+    Dep_city varchar(20) NOT NULL,
+    PRIMARY KEY (Dep_id)
+);
+
+CREATE TABLE EMPLOYEE (
+    ID_EMPLOYEE int AUTO_INCREMENT,
+    f_name varchar(20) NOT NULL,
+    s_name varchar(20) NOT NULL,
+    t_name varchar(20) NOT NULL,
+    sex enum ('F','M'),
+    BirthDate DATE,
+    position enum('officer','commisar','inspector','policeman') not null,
+    payment decimal(7,2),
+    department_id int NOT NULL,
+    PRIMARY KEY (ID_EMPLOYEE),
+    FOREIGN KEY (department_id) REFERENCES DEPARTMENT(Dep_id),
+    CONSTRAINT check_payment CHECK (payment >= 0)
+);
+
+CREATE TABLE types_of_crime (
+    typeCrime_id int AUTO_INCREMENT,
+    Type_name varchar(20),
+    PRIMARY KEY (typeCrime_id)
+);
+
+CREATE TABLE CRIMINAL (
+    Criminal_id int AUTO_INCREMENT,
+    BirthDate DATE NOT NULL,
+    f_name varchar(20) NOT NULL,
+    s_name varchar(20) NOT NULL,
+    t_name varchar(20) NOT NULL,
+    sex enum ('F','M'),
+    address varchar(50),
+    contacts char(10),
+    PRIMARY KEY (Criminal_id)
+);
+
+CREATE TABLE CRIME (
+    Crime_id int AUTO_INCREMENT,
+    Type_id int not Null,
+    dateOpened DATE not Null,
+    dateClosed DATE,
+    is_solved enum ('Y','N'),
+    PRIMARY KEY (Crime_id),
+    FOREIGN KEY (Type_id) REFERENCES types_of_crime(typeCrime_id)
+);
+
+
+
+
+CREATE TABLE Is_commited (
+    Crime_id int not NULL,
+    Main_perpetrator_id int not NULL,
+    Crime_partner_id int,
+    FOREIGN KEY (Crime_id) REFERENCES CRIME(Crime_id),
+    FOREIGN KEY (Main_perpetrator_id) REFERENCES CRIMINAL(Criminal_id),
+    FOREIGN KEY (Crime_partner_id) REFERENCES CRIMINAL(Criminal_id)
+);
+
+CREATE TABLE Is_investigating (
+    Cr_id int not NULL,
+    Chief_id int not NULL,
+    Partner_id int,
+    FOREIGN KEY (Cr_id) REFERENCES CRIME(Crime_id),
+    FOREIGN KEY (Chief_id) REFERENCES EMPLOYEE(ID_EMPLOYEE),
+    FOREIGN KEY (Partner_id) REFERENCES EMPLOYEE(ID_EMPLOYEE)
+);
+
+
+//	II.	DML SQL queries:
+
+INSERT INTO DEPARTMENT(Dep_name,Dep_adress,Dep_city) VALUES 
+	('iconomic police','bul.Hr.Botev 2','Plovdiv'),
+	('criminal police','8 Laika str.','Sofia'),
+	('national search','bul.Dunav 64A','Varna'),
+	('trafic police','12 Roza str.','V.Tarnovo');
+
+INSERT INTO EMPLOYEE(f_name,s_name,t_name,sex,BirthDate,position,payment,department_id) VALUES 
+	('Orlin','Angelov','Ivailov','M','1987-7-23','officer','2345','1'),
+	('Daniel','Georgiev','Mihov','M','1999-08-06','commisar','1234','3'),
+	('Mariq','Stoqnova','Ivanova','F','1977-11-08','commisar','1234','3'),
+	('Nikolay','Svetoslavov','Marinov','M','1975-5-13','inspector','4567','2'),
+	('Georgi','Andreev','Gogov','M','1978-10-04','policeman','1134','1');
+
+
+INSERT INTO types_of_crime (Type_name) VALUES 
+	('violent'),
+	('property'),
+	('organized'),
+	('white-collar');
+
+
+INSERT INTO CRIMINAL (BirthDate,f_name,s_name,t_name,sex,address,contacts) VALUES
+	('1993-04-14','Ellen','Martin','Lutter','F','Alen str.','8898764387'),
+	('1987-06-26','Martonio','Tumberg','Clut','M','Adelson str.','7790234928'),
+	('1999-05-02','Geno','Tanium','Chation','M','Takish str.','9879876534'),
+	('1974-02-03','Milan','George','Sizar','M','35th Walsberg str.','7654334567');
+INSERT INTO CRIME(Type_id,dateOpened,dateClosed,is_solved) VALUES 
+	('2', '2015-06-07','2012-08-13','Y'),
+	('3', '2015-03-24','2015-11-20','N'),
+	('1', '2022-02-13',NULL,'N'),					
+	('4', '2023-03-26','2023-11-15','Y');
+    
+    INSERT INTO CRIME (Type_id,dateOpened,dateClosed,is_solved)  VALUES
+ ('2', '2015-06-08','2012-02-13','Y');
+
+    INSERT INTO CRIME (Type_id,dateOpened,dateClosed,is_solved) VALUES 
+('3', '2017-04-04','2022-04-14','N');
+
+
+
+INSERT INTO Is_commited (Crime_id,Main_perpetrator_id,Crime_partner_id) VALUES
+	('2','3','1'),
+	('1','1','3'),
+	('1','1','4'),
+	('4','1',NULL),
+	('3','2','3');
+    
+INSERT INTO Is_commited (Crime_id,Main_perpetrator_id,Crime_partner_id) VALUES
+	('6','3','2'),
+	('7','4','1');
+
+
+
+INSERT INTO Is_investigating (Cr_id,Chief_id,Partner_id) VALUES
+	('1','3',NULL),
+	('1','3','1'),
+	('2','4','3'),									
+	('4','2','1'),
+	('3','2','1');
+    
+ INSERT INTO Is_investigating (Cr_id,Chief_id,Partner_id)VALUES
+ ('6','4',NULL);
+
+UPDATE Is_investigating
+SET Chief_id = '1'
+WHERE Cr_id = '1' AND Partner_id IS NULL;
+
+DELETE FROM Is_investigating
+WHERE Cr_id = '1' AND Partner_id IS NULL;
+
